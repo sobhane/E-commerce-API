@@ -8,5 +8,5 @@ module.exports = {
   UnauthenticatedError,
   NotFoundError,
   BadRequestError,
-  UnauthorizedError
+  UnauthorizedError,
 };

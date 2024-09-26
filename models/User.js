@@ -5,22 +5,22 @@ const bcrypt = require("bcryptjs");
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "please provide name"],
-    maxlength: 50,
+    required: [true, "Please provide name"],
     minlength: 3,
+    maxlength: 50,
   },
   email: {
     type: String,
-    required: [true, "please provide email"],
+    unique: true,
+    required: [true, "Please provide email"],
     validate: {
       validator: validator.isEmail,
-      message: "Please provide a valid email",
+      message: "Please provide valid email",
     },
-    unique: true,
   },
   password: {
     type: String,
-    required: [true, "please provide password"],
+    required: [true, "Please provide password"],
     minlength: 6,
   },
   role: {
@@ -28,17 +28,30 @@ const UserSchema = new mongoose.Schema({
     enum: ["admin", "user"],
     default: "user",
   },
+  passwordToken: {
+    type: String,
+  },
+  passwordTokenExpirationDate: {
+    type: Date,
+  },
+  verificationToken: String,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verified: Date,
 });
 
 UserSchema.pre("save", async function () {
-  console.log(this.modifiedPaths());
+  // console.log(this.modifiedPaths());
+  // console.log(this.isModified('name'));
   if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+UserSchema.methods.comparePassword = async function (canditatePassword) {
+  const isMatch = await bcrypt.compare(canditatePassword, this.password);
   return isMatch;
 };
 

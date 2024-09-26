@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const SingleOrderItemSchema = mongoose.Schema({
   name: { type: String, required: true },
@@ -6,13 +6,13 @@ const SingleOrderItemSchema = mongoose.Schema({
   price: { type: Number, required: true },
   amount: { type: Number, required: true },
   product: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.ObjectId,
+    ref: 'Product',
     required: true,
-    ref: "Product",
   },
 });
 
-const OrderSchema = new mongoose.Schema(
+const OrderSchema = mongoose.Schema(
   {
     tax: {
       type: Number,
@@ -33,23 +33,23 @@ const OrderSchema = new mongoose.Schema(
     orderItems: [SingleOrderItemSchema],
     status: {
       type: String,
-      enum: ["pending", "failed", "paid", "delievered", "canceled"],
-      default: "pending",
+      enum: ['pending', 'failed', 'paid', 'delivered', 'canceled'],
+      default: 'pending',
     },
     user: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
       required: true,
-      ref: "User",
     },
     clientSecret: {
       type: String,
       required: true,
     },
-    payementIntentID: {
+    paymentIntentId: {
       type: String,
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Order", OrderSchema);
+module.exports = mongoose.model('Order', OrderSchema);

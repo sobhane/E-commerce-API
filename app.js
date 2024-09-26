@@ -1,36 +1,37 @@
 require("dotenv").config();
 require("express-async-errors");
-//router
-const authRouter = require("./routes/authRoutes");
-const userRouter = require("./routes/userRoutes");
-const productRouter = require("./routes/productRoutes");
-const reviewRouter = require("./routes/reviewRoutes");
-const OrderRouter = require("./routes/orderRoutes");
+// express
 
 const express = require("express");
-//database
-const connectDB = require("./db/connect");
-//Erorr handlers
-const errorHandlerMiddleware = require("./middleware/error-handler");
-const notFounds = require("./middleware/not-found");
-
-const { authenticatedUser } = require("./middleware/authentication");
-
+const app = express();
+// rest of the packages
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
-const rateLImiter = require("express-rate-limit");
+const rateLimiter = require("express-rate-limit");
 const helmet = require("helmet");
 const xss = require("xss-clean");
 const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+// database
+const connectDB = require("./db/connect");
 
+//  routers
+const authRouter = require("./routes/authRoutes");
+const userRouter = require("./routes/userRoutes");
+const productRouter = require("./routes/productRoutes");
+const reviewRouter = require("./routes/reviewRoutes");
+const orderRouter = require("./routes/orderRoutes");
+
+// middleware
+const notFoundMiddleware = require("./middleware/not-found");
+const errorHandlerMiddleware = require("./middleware/error-handler");
+
+app.use(morgan("tiny"));
 app.set("trust proxy", 1);
 app.use(
-  rateLImiter({
+  rateLimiter({
     windowMs: 15 * 60 * 1000,
     max: 60,
   })
@@ -42,26 +43,32 @@ app.use(mongoSanitize());
 
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
+
 app.use(express.static("./public"));
 app.use(fileUpload());
 
-app.use("/api/v1/orders", OrderRouter);
-app.use("/api/v1/reviews", reviewRouter);
-app.use("/api/v1/products", productRouter);
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/users", authenticatedUser, userRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/orders", orderRouter);
 
-app.use(notFounds);
+app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
+const port = process.env.PORT || 5000;
 const start = async () => {
   try {
     await connectDB(process.env.MONGO_URL);
-
-    app.listen(PORT, console.log(`Server is listening to port ${PORT}`));
+    app.listen(port, () =>
+      console.log(`Server is listening on port ${port}...`)
+    );
   } catch (error) {
     console.log(error);
   }
 };
 
+
+
 start();
+
